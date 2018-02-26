@@ -5,7 +5,13 @@
  */
 package authenticityproject;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import javax.security.cert.CertificateEncodingException;
 
 import pt.gov.cartaodecidadao.PTEID_EIDCard;
 import pt.gov.cartaodecidadao.PTEID_Exception;
@@ -19,10 +25,8 @@ import pteidlib.pteid;
  */
 public class AuthenticityProject {
 
-    private PTEID_EIDCard card;
+    private static PTEID_EIDCard card;
     public static PTEID_Sod sod; //SOD object
-
-
 
     /*
      * Carrega a biblioteca "pteidlibj"
@@ -37,17 +41,21 @@ public class AuthenticityProject {
         }
     }
 
-    public static void main(String[] args) throws PTEID_Exception, IOException {
+    public static void main(String[] args) throws PTEID_Exception, IOException, CertificateException, FileNotFoundException, KeyStoreException, NoSuchAlgorithmException, CertificateEncodingException {
 
         try {
 
             pteid.Init("");
             pteid.SetSODChecking(false);
 
-            //TESTAR A ESCRITA DO FICHEIRO SOD E FICHEIRO DE CERTIFICADOS EM CASA
-            AuxFile aux = new AuxFile();
+            //SOD File
+            AuxFile aux = new AuxFile(card);
             byte[] bytesSod = aux.getSODbytes(sod);
             aux.createSODFile(bytesSod, "sodFile.ber");
+
+            //Certificates
+            X509Certificate[] certs = aux.getCardCertificates();
+            aux.writeX509CertsToFile(certs);
 
         } catch (PteidException ex) {
             ex.printStackTrace();

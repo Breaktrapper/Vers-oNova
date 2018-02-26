@@ -16,9 +16,10 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import java.security.cert.X509Certificate;
 
 import javax.security.cert.CertificateEncodingException;
 
@@ -42,7 +43,20 @@ import sun.security.x509.AlgorithmId;
  */
 public class AuxFile {
 
-    private PTEID_EIDCard card; //Card object
+    public static PTEID_EIDCard card; //Card object
+    public static PTEID_Sod sod;
+
+    public AuxFile(PTEID_EIDCard card) {
+        this.card = card;
+    }
+
+    public PTEID_EIDCard getCard() {
+        return card;
+    }
+
+    public PTEID_Sod getSod() {
+        return sod;
+    }
 
     /*
      * Obtenção dos certificados do cartão de cidadão
@@ -69,9 +83,10 @@ public class AuxFile {
     }
 
     //Escrita de um certificado X509 para o ficheiro e adicionar à keystore
-    public void saveCerts(javax.security.cert.X509Certificate x509) throws FileNotFoundException, IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException, CertificateEncodingException {
+    public void saveCerts(X509Certificate x509) throws FileNotFoundException, IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException, CertificateEncodingException {
         try (FileOutputStream os = new FileOutputStream("x509certs.pem")) {
             os.write("-----BEGIN CERTIFICATE-----\n".getBytes("US-ASCII"));
+
             os.write(org.bouncycastle.util.encoders.Base64.encode(x509.getEncoded()));
             //os.write(Base64.encodeBase64(x509.getEncoded(), true));
             os.write("-----END CERTIFICATE-----\n".getBytes("US-ASCII"));
@@ -87,23 +102,25 @@ public class AuxFile {
 
         }
     }
-    public void writeX509CertsToFile(X509Certificate[] certs) {
+
+    public void writeX509CertsToFile(X509Certificate[] certs) throws IOException, FileNotFoundException, KeyStoreException, NoSuchAlgorithmException, CertificateException, CertificateEncodingException {
         for (X509Certificate x509 : certs) {
             saveCerts(x509);
         }
 
     }
+
     //--------------------------------------------------------------------------------------------------------------------------------------------------------------------
     /*
      * Obtenção do ficheiro SOD do cartão
      */
-    public static byte[] getSODbytes(PTEID_Sod sod) throws PTEID_Exception {
+    public byte[] getSODbytes(PTEID_Sod sod) throws PTEID_Exception {
         PTEID_ByteArray byteArray = sod.getData();
         byte[] bytes = byteArray.GetBytes();
         return bytes;
     }
 
-    public static void createSODFile(byte[] bytes, String filename) throws IOException {
+    public void createSODFile(byte[] bytes, String filename) throws IOException {
         try (FileOutputStream fos = new FileOutputStream(filename)) {
             int k = 4;
             byte[] newSod = new byte[bytes.length - k];
@@ -139,8 +156,5 @@ public class AuxFile {
         }
     }
 
-    private void saveCerts(X509Certificate x509) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 
 }
